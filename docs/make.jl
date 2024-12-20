@@ -2,9 +2,8 @@
 """
 
 using Documenter, LiveServer
-cd("/Users/ryan/Github/Wired.jl/docs")
-# push!(LOAD_PATH, ".../src/")
 include("../src/Wired.jl")
+using Wired
 
 pages = [
     "Home" => "index.md", 
