@@ -3,7 +3,7 @@
 
 using Documenter
 # using LiveServer
-include("../src/Wired.jl")
+# include("../src/Wired.jl")
 using Wired
 
 pages = [
