@@ -10,9 +10,9 @@ CurrentModule = Wired
 Define custom types.
 ```@docs
 Mesh
-Wires
-CircularRings
-RectangularRings
+Wire
+CircularRing
+RectangularRing
 ```
 
 ## Mathematical Functions
@@ -44,7 +44,7 @@ loadrings
 Define functions that create basic sets of points at which to calculate fields.
 
 ```@docs 
-line
+Line
 ```
 
 ## Biot-Savart Solvers
