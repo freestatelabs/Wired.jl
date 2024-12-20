@@ -2,8 +2,7 @@
 """
 
 using Documenter
-using LiveServer
-# include("../src/Wired.jl")
+# using LiveServer
 using Wired
 
 pages = [
@@ -20,4 +19,4 @@ makedocs(
     sitename="Wired.jl", 
     pages = pages)
 
-serve(dir="Wired/docs/build")
+# serve(dir="Wired/docs/build")
