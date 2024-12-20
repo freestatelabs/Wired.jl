@@ -20,3 +20,7 @@ makedocs(
     pages = pages)
 
 # serve(dir="Wired/docs/build")
+
+deploydocs(
+    repo = "github.com/freestatelabs/Wired.jl.git",
+)
