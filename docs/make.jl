@@ -1,7 +1,8 @@
 """ Build documentation for Wired.jl
 """
 
-using Documenter, LiveServer
+using Documenter
+# using LiveServer
 include("../src/Wired.jl")
 using Wired
 
@@ -19,4 +20,4 @@ makedocs(
     sitename="Wired.jl", 
     pages = pages)
 
-serve(dir="build")
+# serve(dir="build")
