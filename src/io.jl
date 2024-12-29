@@ -50,14 +50,13 @@ function savemesh(fn::String, mesh::Mesh)
 end
 
 
-
 """
     loadrings(fn::String)
 
 Load Ring objects from file.
 
 # Returns 
-Vector{CircularRing}, Vector{RectangularRing}
+`Vector{CircularRing}, Vector{RectangularRing}`
 """
 function loadrings(fn::String)
 
@@ -96,7 +95,6 @@ end
 
 Save Ring objects to a file
 """
-
 function saverings(fn::String, rings::Vector{<:Source})
 
     header = ["Name" "Z height [m]" "Major Radius [m]" "Minor Radius [m]" "Width [m]" "Height [m]" "Current [A]"]

@@ -7,12 +7,24 @@
         - mesh
 """
 
+"""
+    abstract type Field
+
+Represents a collection of locations in 3D space at which output data will be requested
+"""
 abstract type Field end 
+
 
 """
     line(start, stop, N)
 
-Create points along a line in 3D space. 
+Represents points along a line in 3D space
+
+# Fields 
+- `start::Vector{Float64}`: 3-length start point of the line 
+- `stop::Vector{Float64}`: 3-length end point of the line 
+- `N::Integer`: number of points along the line 
+- `nodes::Matrix{Float64}: Nx3 `Matrix` of locations for calculations
 """
 struct Line <: Field 
 
@@ -20,6 +32,7 @@ struct Line <: Field
     stop::Vector{Float64}
     N::Integer
     nodes::Matrix{Float64}
+
 
     function Line(start::Vector{<:Number}, stop::Vector{<:Number}, N::Integer)
 

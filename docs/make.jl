@@ -2,7 +2,6 @@
 """
 
 using Documenter
-# using LiveServer
 using Wired
 
 pages = [
@@ -19,6 +18,7 @@ makedocs(
     sitename="Wired.jl", 
     pages = pages)
 
+# using LiveServer
 # serve(dir="Wired/docs/build")
 
 deploydocs(

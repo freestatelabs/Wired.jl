@@ -1,37 +1,55 @@
-using BenchmarkTools, Plots
 using Wired
 
-# # circ, rect = loadrings("testdata/testring.csv")
-circ = CircularRing("name", 0, 1, 0.05, 1000)
-rect = RectangularRing("name", 0, 1, 0.1, 0.1, 1000)
 
-z = 0.
-x0 = 0.
-x1 = 2.
-a = circ.R[1]
-line = Line([x0,0,z], [x1,0,z], 1000) 
+function testring_circular()
+    # Check that the magnetic field at the centroid of the ring is the same 
+    # as the analytic expression
 
-Bc = bfield(line.nodes, [circ])
-Br = bfield(line.nodes, [rect]; Nmin=4)
+    println("Testing Ring - Circular")
 
-# Baxis = length(circ.name)*(mu0 * circ.I[1] * a^2) / (2*(a^2 + z^2)^1.5)
+    H = 0.0  
+    R = 1.0
+    r = 0.1 
+    Iring = 1000
+    circ = CircularRing("name", H, R, r, Iring)
 
-p = plot(line.nodes[:,1], Bc[:,3], label="Circular")#, seriestype=:scatter)
-plot!(line.nodes[:,1], Br[:,3], label="Rectangular")#, seriestype=:scatter)
-display(p)
+    nodes = [0 0 0] 
+    B = bfield(nodes, [circ], errmax=1e-8)
+    Bz = mu0 * Iring * R^2 / (2 * (R^2 + H^2)^1.5)
 
-@info "Program completed successfully."
-
-nodes = zeros(1000,3)
-B = zeros(size(nodes))
-circ = Vector{CircularRing}(undef,1000)
-for i in range(1,length(circ)) 
-    circ[i] = CircularRing("name", 0, 1, 0.05, 1000)
+    if isapprox(B[3], Bz, rtol=1e-8)
+        return true 
+    else 
+        return false 
+    end
 end
 
-@benchmark bfield($nodes, $circ; errmax=1e-8, Nt=1)
 
+function testring_rectangular()
+    # Check that the magnetic field at the centroid of the ring is the same 
+    # as the analytic expression
+    #
+    # Note reduced precision in `rtol`: there's no analytic expression for this
 
+    println("Testing Ring - Rectangular")
 
+    H = 0.0  
+    R = 10.0
+    w = 0.1
+    h = 0.1
+    Iring = 1000
+
+    rect = RectangularRing("name", H, R, w, h, 1000)
+    nodes = [0 0 0] 
+    B = bfield(nodes, [rect]; Nmin=10, errmax=1e-16)
+    Bz = mu0 * Iring * R^2 / (2 * (R^2 + H^2)^1.5)
+
+    if isapprox(B[3], Bz, rtol=1e-4)
+        return true 
+    else 
+        return false 
+    end
+
+end
 
 

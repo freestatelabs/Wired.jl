@@ -1,6 +1,5 @@
 """ Lorentz force calculations for Wired.jl
     (c) 2024 ryan@freestatelabs
-
 """
 
 
@@ -8,6 +7,9 @@
     lorentz(mesh::Mesh, B::AbstractArray)
 
 Calculate the Lorentz forces acting on a mesh
+
+# Returns
+Nx3 `Matrix` containing the force density vectors for each location in the mesh
 """
 function lorentz(mesh::Mesh, B::AbstractArray)
 

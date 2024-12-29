@@ -22,9 +22,13 @@ using StaticArrays
 
 # Permeability of free space
 const mu0 = 4pi * (1e-7)
+export mu0
+
+# Define floating-point precision
+precision = Float64
 
 include("sources.jl")
-export Wire, CircularRing, RectangularRing
+export Source, Wire, Ring, CircularRing, RectangularRing
 
 include("fields.jl")
 export Line
@@ -33,7 +37,7 @@ include("mesh.jl")
 export Mesh
 
 include("utils.jl")
-export ellipK, ellipE, ellipKE
+export ellipK, ellipE, ellipKE, crossrows!, normrows!, multrows!, dotrows!
 
 include("processing.jl")
 export makewires, makecircrings

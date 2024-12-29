@@ -2,6 +2,13 @@
     (c) 2024 ryan@freestatelabs
 """
 
+using StaticArrays
+
+"""
+    abstract type Source 
+
+Represents a time-invariant current source that generates a magnetic field
+"""
 abstract type Source end 
 
 
@@ -20,19 +27,39 @@ value on the surface at r=R, and decays linearly to zero at the center with r=0.
 - `I::Float64`: total current in the filament
 - `R::Float64`: radius of the wire segment
 """
-struct Wire <: Source
-    a0::SVector{3, Float32}
-    a1::SVector{3, Float32}
-    I::Float32
-    R::Float32
+struct Wire{T<:Real} <: Source
+    a0::SVector{3, T}
+    a1::SVector{3, T}
+    I::T
+    R::T
 
-    # function Wire(a0::SVector{<:Real}, a1::SVector{<:Real}, I::Real, R::Real)
-    #     new(float.(a0), float.(a1), float(I), float(R))
-    # end
+    # Constructor converts inputs to StaticVectors
+    # Requires specifying a type
+    function Wire{T}(a0::Vector{<:Real}, a1::Vector{<:Real}, I::Real, R::Real) where T<:Real
+        a0 = SVector{3}(convert.(T, a0))
+        a1 = SVector{3}(convert.(T, a1))
+        new{T}(a0, a1, convert(T, I), convert(T, R))
+    end
+
+    # Constructor applies Wired.precision by default (convenience method)
+    function Wire(a0::Vector{<:Real}, a1::Vector{<:Real}, I::Real, R::Real)
+
+        Wire{precision}(a0, a1, I, R)
+    end
 end
 
 
+
+"""
+    abstract type Ring <: Source
+
+A circular current-carrying ring with circular or rectangular-cross-section.
+
+Major axis of the ring is the Z-axis.
+"""
 abstract type Ring <: Source end 
+
+
 """
     struct CircularRing <: Ring
 
@@ -52,16 +79,15 @@ and the magnetic field can be accurately calculated within the ring itself.
 """
 struct CircularRing <: Ring 
 
-    name::String
-    H::Float64
-    R::Float64 
-    r::Float64 
-    I::Float64 
+    name::AbstractString
+    H::Real
+    R::Real
+    r::Real
+    I::Real
 
-    function CircularRing(name::AbstractString, H::Number, R::Number, r::Number, I::Number)
-
-        new(name, float(H), float(R), float(r), float(I))
-    end
+    # function CircularRing(name::AbstractString, H::Number, R::Number, r::Number, I::Number)
+    #     new(name, float(H), float(R), float(r), float(I))
+    # end
 end
 
 
@@ -86,14 +112,14 @@ and the magnetic field can be accurately calculated within the ring itself.
 struct RectangularRing <: Ring 
 
     name::AbstractString
-    H::Number 
-    R::Number 
-    w::Number 
-    h::Number
-    I::Number 
+    H::Real 
+    R::Real 
+    w::Real 
+    h::Real
+    I::Real 
 
-    function RectangularRing(name::AbstractString, H::Number, R::Number, w::Number, h::Number, I::Number)
+    # function RectangularRing(name::AbstractString, H::Number, R::Number, w::Number, h::Number, I::Number)
 
-        new(name, float(H), float(R), float(w), float(h), float(I))
-    end
+    #     new(name, float(H), float(R), float(w), float(h), float(I))
+    # end
 end

@@ -8,7 +8,7 @@
 
 Solve the complete elliptic integral of the first kind
 """
-function ellipK(k2; itmax=100, errmax=1e-6)
+function ellipK(k2::Real; itmax=100, errmax=1e-6)
 
     if abs(k2 - 1.0) <= errmax
         return Inf 
@@ -45,7 +45,7 @@ Solve the complete elliptic integral of the second kind
 Reference:
 [https://mathworld.wolfram.com/CompleteEllipticIntegraloftheSecondKind.html](https://mathworld.wolfram.com/CompleteEllipticIntegraloftheSecondKind.html)
 """
-function ellipE(k2; itmax=100, errmax=1e-6)
+function ellipE(k2::Real; itmax=100, errmax=1e-6)
 
     E = 0.0
 
@@ -91,7 +91,7 @@ end
 
 Solve the complete elliptic integrals of the first and second kinds.
 """
-function ellipKE(k2; itmax=100, errmax=1e-12)
+function ellipKE(k2::Real; itmax=100, errmax=1e-12)
 
     k2 = Float64(k2)
 
@@ -138,15 +138,14 @@ end
 
 
 """
-    crossrows!(C::AbstractArray{Float64}, A::AbstractArray{Float64}, b::Vector{Float64})
+    crossrows!(C::AbstractArray, A::AbstractArray, b::Vector)
 
 Cross each row of A by a 3-length vector b and place in C, i.e. 
 
     C[i,:] = cross(A[i,:], b)
 
 """
-
-@views function crossrows!(C::AbstractArray{Float64}, A::AbstractArray{Float64}, b::Vector{Float64})
+@views function crossrows!(C::AbstractArray, A::AbstractArray, b::AbstractVector)
 
     C[:,1] .= A[:,2] .* b[3] .- A[:,3] .* b[2]
     C[:,2] .= A[:,3] .* b[1] .- A[:,1] .* b[3]
@@ -156,14 +155,14 @@ end
 
 
 """
-    normrows!(b::Vector{Float64}, A::AbstractArray{Float64})
+    normrows!(b::Vector, A::AbstractArray)
 
 Calculate the vector norm of each row in Nx3 matrix and place in `b`, i.e. 
 
     b[i] = norm(A[i,:])
 
 """
-@views function normrows!(b::Vector{Float64}, A::AbstractArray{Float64})
+@views function normrows!(b::AbstractVector, A::AbstractArray)
 
     b .= (sqrt.(A[:,1].^2 .+ A[:,2].^2 .+ A[:,3].^2))
 
@@ -171,7 +170,7 @@ end
 
 
 """
-    multrows!(A::AbstractArray{Float64}, b::Vector{Float64})
+    multrows!(A::AbstractArray, b::Vector)
 
 In-place element-wise multiplication of each row of an Nx3 matrix by the 
 corresponding element in vector `b`, i.e.
@@ -179,8 +178,7 @@ corresponding element in vector `b`, i.e.
     A[i,:] .*= b[i]
 
 """
-# Multiply the rows of a matrix `A` by a vector b 
-@views function multrows!(A::AbstractArray{Float64}, b::Vector{Float64})
+@views function multrows!(A::AbstractArray, b::AbstractVector)
 
     A[:,1] .*= b 
     A[:,2] .*= b 
@@ -190,13 +188,13 @@ end
 
 
 """ 
-    dotrows!(c::Vector{Float64}, A::AbstractArray{Float64}, b::Vector{Float64})
+    dotrows!(c::Vector, A::AbstractArray, b::Vector)
 
 In-place dot-product of the rows of A by vector b; place in C, i.e. 
 
     c[i] .*= dot(A[i,:], b)       # or C[i,:] .*= sum(A[i,:] .* b)
 """
-@views function dotrows!(c::Vector{Float64}, A::AbstractArray{Float64}, b::Vector{Float64})
+@views function dotrows!(c::AbstractVector, A::AbstractArray, b::AbstractVector)
 
     c .= (A[:,1] .* b[1] .+ A[:,2] .* b[2] .+ A[:,3] .* b[3])
 end
@@ -231,4 +229,40 @@ function threadindices(it::Integer, Nt::Integer, N::Integer)
     end 
 
     return i1:i2
+end
+
+
+"""
+    matrixtotable(A::AbstractArray, header::AbstractArray, digits=1)
+
+    Convert a `Matrix` into a Markdown table
+
+    # Returns
+    `String` that can be printed and copied into a markdown document
+"""
+function matrixtotable(A::AbstractArray, header::AbstractArray, digits=1)
+
+    output = ""
+
+    for h in header
+        output *= "| " * h * " "
+    end 
+    output *= "|\n"
+
+    for i in 1:size(header)[1]
+        output *= "| --- "
+    end 
+    output *= " |\n"
+
+    for i in 1:size(A)[1] 
+        for j in 1:size(A)[2]
+
+            output *= "| " * string(round(A[i,j], digits=digits)) * " "
+
+        end
+        output *= " |\n"
+    end
+
+    return output
+
 end
