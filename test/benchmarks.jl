@@ -7,11 +7,12 @@ using BenchmarkTools, Printf
 
 run_wirebenchmarks = true
 run_ringbenchmarks = false
-make_plots = true
+make_plots = false
 Wired.precision = Float32
 
-if make_plots
-    using Plots 
+if make_plots	
+	# Don't want to make Plots a dependency
+	using Plots 
 end
 
 function createwireproblem(N)

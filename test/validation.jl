@@ -4,7 +4,12 @@
 """
 
 using Wired 
-using Plots 
+make_plots = false 
+
+if make_plots	
+	# Don't want to make Plots a dependency
+	using Plots 
+end
 
 
 function test_validation(do_plot=false, savefigs=false)

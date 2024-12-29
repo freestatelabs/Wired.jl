@@ -1,5 +1,5 @@
 using Wired
-using Test
+using Test, BenchmarkTools
 
 @testset "Wired.jl" begin
 
