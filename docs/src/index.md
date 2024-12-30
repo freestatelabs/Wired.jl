@@ -7,3 +7,4 @@ A fast, efficient Biot-Savart law integrator in Julia.
 * Provide easy-to-use utilities for the end-user
 * Thoroughly document the code with clear and concise descriptions of how to implement it
 
+

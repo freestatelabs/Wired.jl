@@ -5,12 +5,16 @@ Code validation for `Wired.jl`.
 ## Infinite Wire with Finite Radius
 
 Given an infinite wire along the z-axis with the following parameters:
-- `r = 10 mm` (radius of cross-section)
-- `I = 1 kA` 
+- ``r = 10 mm`` (radius of cross-section)
+- ``I = 1 kA`` 
 
 Calculate the y-component of the magnetic field along the x-axis.  The analytical solution is provided by:  
-$$B_y(x) = \frac{\mu \space I}{2\pi\space r^2}\cdot x, \space (x<=r)$$
-$$B_y(x) = \frac{\mu \space I}{2pi \cdot x}, \space (x > r)$$
+```math
+B_y(x) = \frac{\mu \space I}{2\pi\space r^2}\cdot x, \space (x \leq r)
+```
+```math
+B_y(x) = \frac{\mu \space I}{2pi \cdot x}, \space (x > r)
+```
 
 ### Code
 ```julia
@@ -36,10 +40,10 @@ ylabel!(p, "Magnetic Flux Density (By) [T]")
 ## Circular Ring with Finite Radius
 
 Given a circular curent-carrying ring with a circular cross-section and the following parameters:
-- `H = 0.0 m`
-- `R = 2.0 m`
-- `r = 0.1 m` 
-- `I = 10 kA`
+- ``H = 0.0 m``
+- ``R = 2.0 m``
+- ``r = 0.1 m`` 
+- ``I = 10 kA``
 
 Calculate the magnetic field at the following locations:
 - Along the Z-axis from (0,0,0) to (0,0,1) [m]
