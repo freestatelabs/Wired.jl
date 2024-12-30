@@ -64,9 +64,9 @@ integer rounding.)
 # Returns 
 Vector{CircularRing}, which is of indeterminate length apriori.
 """
-function makecircrings(rect::AbstractArray{RectangularRing}, Nmin=2)
+function makecircrings(rect::AbstractArray{RectangularRing{T}}, Nmin=2) where T<:Real
 
-    circ = Vector{CircularRing}(undef, 0)
+    circ = Vector{CircularRing{T}}(undef, 0)
 
     for i in eachindex(rect)
 

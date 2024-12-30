@@ -8,7 +8,9 @@ using BenchmarkTools, Printf
 run_wirebenchmarks = true
 run_ringbenchmarks = false
 make_plots = false
-Wired.precision = Float32
+Wired.precision = Float64
+Nvals = [1000, 2000, 4000, 8000, 10000]
+Nts = [1, 2, 4, 6]
 
 if make_plots	
 	# Don't want to make Plots a dependency
@@ -106,8 +108,7 @@ end
 
 
 if run_wirebenchmarks
-    Nvals = [1000, 2000, 4000, 8000, 10000]
-    Nts = [1, 2, 4, 6]
+
     times1 = runwirebenchmarks(Nvals, Nts)
 
     if make_plots
@@ -118,8 +119,7 @@ end
 
 
 if run_ringbenchmarks
-    Nvals = [1000, 2000, 4000, 8000, 10000]
-    Nts = [1, 2, 4, 6]
+
     times2 = runringbenchmarks(Nvals, Nts)
 
     if make_plots

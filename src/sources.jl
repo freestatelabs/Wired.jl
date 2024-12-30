@@ -27,7 +27,7 @@ value on the surface at r=R, and decays linearly to zero at the center with r=0.
 - `I::Float64`: total current in the filament
 - `R::Float64`: radius of the wire segment
 """
-struct Wire{T<:Real} <: Source
+struct Wire{T<:AbstractFloat} <: Source
     a0::SVector{3, T}
     a1::SVector{3, T}
     I::T
@@ -35,15 +35,12 @@ struct Wire{T<:Real} <: Source
 
     # Constructor converts inputs to StaticVectors
     # Requires specifying a type
-    function Wire{T}(a0::Vector{<:Real}, a1::Vector{<:Real}, I::Real, R::Real) where T<:Real
-        a0 = SVector{3}(convert.(T, a0))
-        a1 = SVector{3}(convert.(T, a1))
-        new{T}(a0, a1, convert(T, I), convert(T, R))
+    function Wire{T}(a0::Vector{<:Real}, a1::Vector{<:Real}, I::Real, R::Real) where T<:AbstractFloat
+        new{T}(SVector{3}(convert.(T, a0)), SVector{3}(convert.(T, a1)), convert(T, I), convert(T, R))
     end
 
     # Constructor applies Wired.precision by default (convenience method)
     function Wire(a0::Vector{<:Real}, a1::Vector{<:Real}, I::Real, R::Real)
-
         Wire{precision}(a0, a1, I, R)
     end
 end
@@ -77,17 +74,22 @@ and the magnetic field can be accurately calculated within the ring itself.
 - `I::Float64`: current in the conducting ring; sign convention follows right-hand 
     rule about primary axis.
 """
-struct CircularRing <: Ring 
+struct CircularRing{T<:AbstractFloat} <: Ring 
 
     name::AbstractString
-    H::Real
-    R::Real
-    r::Real
-    I::Real
+    H::T
+    R::T
+    r::T
+    I::T
 
-    # function CircularRing(name::AbstractString, H::Number, R::Number, r::Number, I::Number)
-    #     new(name, float(H), float(R), float(r), float(I))
-    # end
+    function CircularRing{T}(name::AbstractString, H::Real, R::Real, r::Real, I::Real) where T<:AbstractFloat 
+        new(name, convert(T,H), convert(T,R), convert(T,r), convert(T,I))
+    end
+
+    function CircularRing(name::AbstractString, H::Real, R::Real, r::Real, I::Real)
+        CircularRing{precision}(name, H, R, r, I)
+    end
+
 end
 
 
@@ -109,17 +111,21 @@ and the magnetic field can be accurately calculated within the ring itself.
 - `I::Float64`: current in the conducting ring; sign convention follows right-hand 
     rule about primary axis.
 """
-struct RectangularRing <: Ring 
+struct RectangularRing{T<:AbstractFloat} <: Ring 
 
     name::AbstractString
-    H::Real 
-    R::Real 
-    w::Real 
-    h::Real
-    I::Real 
+    H::T
+    R::T 
+    w::T
+    h::T
+    I::T
 
-    # function RectangularRing(name::AbstractString, H::Number, R::Number, w::Number, h::Number, I::Number)
+    function RectangularRing{T}(name::AbstractString, H::Real, R::Real, w::Real, h::Real, I::Real) where T<:Real 
+        new(name, convert(T,H), convert(T,R), convert(T,w), convert(T,h), convert(T,I))
+    end
 
-    #     new(name, float(H), float(R), float(w), float(h), float(I))
-    # end
+    function RectangularRing(name::AbstractString, H::Real, R::Real, w::Real, h::Real, I::Real)
+        RectangularRing{precision}(name, H, R, w, h, I)
+    end
+
 end

@@ -17,5 +17,7 @@ using Test, BenchmarkTools
     include("validation.jl")
     @test test_validation()
 
+    include("test_fields.jl")
+    @test test_line()
 
 end

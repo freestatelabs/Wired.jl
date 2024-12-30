@@ -1,11 +1,7 @@
-""" Defines output fields (3D spatial positions) for Wired.jl
-    (c) 2024 ryan@freestatelabs
-
-    Includes:
-        - line (start, stop, number of points)
-        - plane (corner 1 point, corner 2 point, number of points in both directions)
-        - mesh
+""" Wired.jl
+    Defines output fields (3D spatial positions)
 """
+
 
 """
     abstract type Field
@@ -26,17 +22,16 @@ Represents points along a line in 3D space
 - `N::Integer`: number of points along the line 
 - `nodes::Matrix{Float64}: Nx3 `Matrix` of locations for calculations
 """
-struct Line <: Field 
+struct Line{T<:Real} <: Field 
 
-    start::Vector{Float64}
-    stop::Vector{Float64}
+    start::Vector{T}
+    stop::Vector{T}
     N::Integer
-    nodes::Matrix{Float64}
+    nodes::Matrix{T}
 
+    function Line{T}(start::Vector{<:Real}, stop::Vector{<:Real}, N::Integer) where T<:Real
 
-    function Line(start::Vector{<:Number}, stop::Vector{<:Number}, N::Integer)
-
-        nodes = zeros(N,3)
+        nodes = zeros(T, N, 3)
         nodes[1,:] = start 
         nodes[end,:] = stop 
 
@@ -46,8 +41,11 @@ struct Line <: Field
             nodes[i,:] = nodes[i-1,:] .+ u 
         end 
 
-        new(float.(start), float.(stop), N, nodes)
+        new(convert.(T, start), convert.(T, stop), N, convert.(T, nodes))
     end
-end 
 
-    
+    # Convenience constructor for using Wired.precision
+    function Line(start::Vector{<:Real}, stop::Vector{<:Real}, N::Integer)
+        Line{precision}(start, stop, N)
+    end
+end

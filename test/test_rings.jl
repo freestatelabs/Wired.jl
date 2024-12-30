@@ -13,7 +13,7 @@ function testring_circular()
     Iring = 1000
     circ = CircularRing("name", H, R, r, Iring)
 
-    nodes = [0 0 0] 
+    nodes = [0 0 0]
     B = bfield(nodes, [circ], errmax=1e-8)
     Bz = mu0 * Iring * R^2 / (2 * (R^2 + H^2)^1.5)
 

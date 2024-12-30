@@ -266,3 +266,8 @@ function matrixtotable(A::AbstractArray, header::AbstractArray, digits=1)
     return output
 
 end
+
+# https://discourse.julialang.org/t/get-type-of-field-in-parametric-type/8210/2
+findparam(wires::Vector{<:Wire{T}}) where {T} = T
+findparam(rings::Vector{<:CircularRing{T}}) where {T} = T
+findparam(rings::Vector{<:RectangularRing{T}}) where {T} = T
