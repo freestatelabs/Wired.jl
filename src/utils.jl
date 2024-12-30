@@ -4,11 +4,11 @@
 
 
 """
-    function ellipK(k2; itmax=100, errmax=1e-6)
+    function ellipK(k2; itmax=100, errmax=1e-8)
 
 Solve the complete elliptic integral of the first kind
 """
-function ellipK(k2::Real; itmax=100, errmax=1e-6)
+function ellipK(k2::Real; itmax=100, errmax=1e-8)
 
     if abs(k2 - 1.0) <= errmax
         return Inf 
@@ -38,14 +38,14 @@ function ellipK(k2::Real; itmax=100, errmax=1e-6)
 end
 
 """
-    function ellipE(k2; itmax=100, errmax=1e-6)
+    function ellipE(k2; itmax=100, errmax=1e-8)
 
 Solve the complete elliptic integral of the second kind
 
 Reference:
 [https://mathworld.wolfram.com/CompleteEllipticIntegraloftheSecondKind.html](https://mathworld.wolfram.com/CompleteEllipticIntegraloftheSecondKind.html)
 """
-function ellipE(k2::Real; itmax=100, errmax=1e-6)
+function ellipE(k2::Real; itmax=100, errmax=1e-8)
 
     E = 0.0
 

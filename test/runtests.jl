@@ -3,6 +3,9 @@ using Test, BenchmarkTools
 
 @testset "Wired.jl" begin
 
+    include("test_elliptic.jl")
+    @test test_elliptic()
+
     include("test_wire.jl")
     @test testwire1()
     @test testwire2()
@@ -13,4 +16,6 @@ using Test, BenchmarkTools
 
     include("validation.jl")
     @test test_validation()
+
+
 end

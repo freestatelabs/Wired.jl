@@ -24,8 +24,9 @@ using StaticArrays
 const mu0 = 4pi * (1e-7)
 export mu0
 
-# Define floating-point precision
+# Define floating-point precision and error tolerance of elliptic functions
 precision = Float64
+errmax = 1e-8
 
 include("sources.jl")
 export Source, Wire, Ring, CircularRing, RectangularRing

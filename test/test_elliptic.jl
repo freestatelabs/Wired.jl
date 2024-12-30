@@ -1,36 +1,61 @@
+""" Test and benchmark custom elliptic integral functions
+"""
+
 using Wired
+using Elliptic, Printf, BenchmarkTools
 
-using Elliptic, Printf
-
-N = 1000 
-k2 = [x for x in range(0, 0.999, N)]
-errE = zeros(N)
-errK = zeros(N)
-
-errE .= abs.(ellipE.(k2) .- Elliptic.E.(k2))
-errK .= abs.(ellipK.(k2) .- Elliptic.K.(k2))
+# Wired.errmax = 1e-16
+verbose = false
+benchmark = false
+errtol = 1e-6
 
 
-function testellipticWired(k2) 
+function test_elliptic()
+
+    println("Testing elliptic functions")
+    N = 1000 
+    k2 = [x for x in range(0, 0.999, N)]
+
+    errE = abs.(ellipE.(k2; errmax=Wired.errmax) .- Elliptic.E.(k2))
+    errK = abs.(ellipK.(k2; errmax=Wired.errmax) .- Elliptic.K.(k2))
+
+    if verbose
+        println("Max relative error: ")
+        @printf "E() functions: %.3e\n" maximum(errE)
+        @printf "K() functions: %.3e\n" maximum(errK)
     
-    ellipE.(k2);
-    ellipK.(k2);
+        println("Avg relative error: ")
+        @printf "E() functions: %.3e\n" mean(errE)
+        @printf "K() functions: %.3e\n" mean(errK)
+    end
+
+    if (maximum(errE) <= errtol) && (maximum(errK) <= errtol)
+        return true 
+    else
+        return false
+    end
 end
 
-function testElliptic(k2)
 
+function benchmark_ellipticWired(k2) 
+    ellipE.(k2; Wired.errmax);
+    ellipK.(k2; Wired.errmax);
+end
+
+
+function benchmark_Elliptic(k2)
     Elliptic.E.(k2);
     Elliptic.K.(k2);
-
 end
 
-println("Testing Elliptic.jl K() and E() functions: ")
-@btime testElliptic($k2)
 
-println("Testing Wired ellipE and ellipK functions: ")
-@btime testellipticWired($k2)
+if benchmark
+    println("Benchmarking Elliptic.jl K() and E() functions: ")
+    @btime benchmark_Elliptic($k2)
 
-println("Max relative error: ")
-@printf "E() functions: %.3e\n" maximum(abs.(errE))
-@printf "K() functions: %.3e\n" maximum(abs.(errK))
+    println("Benchmarking Wired ellipE and ellipK functions: ")
+    @btime benchmark_ellipticWired($k2)
+end
+
+
 
