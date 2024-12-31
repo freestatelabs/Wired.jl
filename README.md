@@ -3,6 +3,7 @@
 A highly optimized Biot-Savart Law integrator, written in Julia.
 
 [![Build Status](https://github.com/freestatelabs/Wired.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/freestatelabs/Wired.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![codecov](https://codecov.io/github/freestatelabs/Wired.jl/graph/badge.svg?token=NXG5VVAS0Z)](https://codecov.io/github/freestatelabs/Wired.jl)
 
 Documentation: [https://freestatelabs.github.io/Wired.jl](https://freestatelabs.github.io/Wired.jl)
 
