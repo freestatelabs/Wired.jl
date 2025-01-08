@@ -28,6 +28,9 @@ export mu0
 precision = Float64
 errmax = 1e-8
 
+# Define processing kernel
+kernel = "julia"        # other option is "c"
+
 include("sources.jl")
 export Source, Wire, Ring, CircularRing, RectangularRing
 
