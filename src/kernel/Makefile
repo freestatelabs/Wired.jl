@@ -2,8 +2,8 @@
 #
 # Reference: https://makefiletutorial.com/
 
-CC = gcc-14 
-CFLAGS = -O3 -march=native -ffast-math -shared -fPIC
+CC = gcc
+CFLAGS = -O3 -march=native -ffast-math 
 
 kernel.so:
-	${CC} ${CFLAGS} -o kernel.so kernel.c
+	${CC} -shared ${CFLAGS} -o kernel.so -FPIC kernel.c

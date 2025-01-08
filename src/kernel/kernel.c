@@ -10,6 +10,13 @@
 #include <math.h>
 #include <stdlib.h>
 
+// Testing @ccall from Julia
+void test(float* a, float* b) {
+    printf("Hello from C. Your number is %f", a[0]);
+    b[0] = a[0];
+
+}
+
 // Convenience function to create a 2D array of zeros
 float** zeros(int Nrows, int Ncols) {
 
@@ -76,7 +83,7 @@ void bfield_wires(float* Bx, float* By, float* Bz, float* x, float* y, float* z,
 }
 
 // Solve with optimization level 2: auto-vectorization using the compiler
-void solve2(float** bfield, float** nodes, float** sources, int Nn, int Ns) {
+void solve2(float** bfield, float** nodes, float** sources, float mu_r, int Nn, int Ns) {
 
     float* a = calloc(Nn, sizeof(float)); 
     float** b = zeros(3,Nn);
@@ -93,7 +100,7 @@ void solve2(float** bfield, float** nodes, float** sources, int Nn, int Ns) {
     // Outer loop over sources
     for (int j=0; j<Ns; j++) {
 
-        d = (1e-7) * sources[j][6];
+        d = mu_r * (1e-7) * sources[j][6];
         a[0] = sources[j][3] - sources[j][0];
         a[1] = sources[j][4] - sources[j][1];
         a[2] = sources[j][5] - sources[j][2];

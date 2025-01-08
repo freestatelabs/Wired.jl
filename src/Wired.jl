@@ -49,6 +49,9 @@ export makewires, makecircrings
 include("io.jl")
 export loadmesh, savemesh, loadrings, saverings, loadwires, savewires
 
+include("kernel.jl")
+export installkernel
+
 include("bs_ring.jl")
 include("bs_wire.jl")
 export bfield
