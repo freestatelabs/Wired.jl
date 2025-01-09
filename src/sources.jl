@@ -36,7 +36,8 @@ struct Wire{T<:AbstractFloat} <: Source
     # Constructor converts inputs to StaticVectors
     # Requires specifying a type
     function Wire{T}(a0::Vector{<:Real}, a1::Vector{<:Real}, I::Real, R::Real) where T<:AbstractFloat
-        new{T}(SVector{3}(convert.(T, a0)), SVector{3}(convert.(T, a1)), convert(T, I), convert(T, R))
+        # new{T}(SVector{3}(convert.(T, a0)), SVector{3}(convert.(T, a1)), convert(T, I), convert(T, R))
+        new{T}(convert.(T, a0), convert.(T, a1), convert(T, I), convert(T, R))
     end
 
     # Constructor applies Wired.precision by default (convenience method)

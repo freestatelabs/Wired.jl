@@ -5,5 +5,5 @@
 CC = gcc
 CFLAGS = -O3 -march=native -ffast-math 
 
-kernel.so:
-	${CC} -shared ${CFLAGS} -o kernel.so -FPIC kernel.c
+ckernel.so: kernel.c
+	${CC} -shared ${CFLAGS} -o ckernel.so -fPIC kernel.c

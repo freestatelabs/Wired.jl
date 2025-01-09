@@ -25,14 +25,14 @@ out singularity points.
     norm_cxa = zeros(T, Nn); dot_ac = zeros(T, Nn); 
     norm_c = zeros(T, Nn); dot_ab = zeros(T, Nn) 
     norm_b = zeros(T, Nn) 
-    d = 0.0
+    d = convert(T, 0.0)
     e = zeros(T, Nn)
 
     # Calculate the effect of each source on all nodes 
     # Linearly superimpose (sum) that effect from all sources
     for wire in wires
 
-        d = mu_r * mu0 * wire.I / (4pi)
+        d = Float32(mu_r * mu0 * wire.I / (4pi))
         a .= wire.a1 .- wire.a0
         b .= wire.a0' .- nodes 
         c .= wire.a1' .- nodes
