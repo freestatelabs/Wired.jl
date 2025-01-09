@@ -109,28 +109,13 @@ function bfield(nodes::AbstractArray{T}, wires::Vector{Wire{S}};
         println("Error. Number of threads specified is greater than available threads.")
     end
 
-    # Convert the wires to an array if using the C kernel
-    if kernel == "c" 
-        sources = zeros(length(wires), 8)
-        for i in 1:length(wires)
-            sources[i,1] = wires[i].a0[1]
-            sources[i,2] = wires[i].a0[2]
-            sources[i,3] = wires[i].a0[3]
-            sources[i,4] = wires[i].a1[1]
-            sources[i,5] = wires[i].a1[2]
-            sources[i,6] = wires[i].a1[3]
-            sources[i,7] = wires[i].I
-            sources[i,8] = wires[i].R
-        end
-    end
-
     # Spawn a new task for each thread by splitting up the source array
     tasks = Vector{Task}(undef, Nt)
     for it = 1:Nt 
         if kernel == "julia"
             @views tasks[it] = Threads.@spawn biotsavart(nodes, wires[threadindices(it, Nt, Ns)]; mu_r=mu_r)
         elseif kernel == "c"
-            @views tasks[it] = Threads.@spawn biotsavart_ckernel(nodes, sources[threadindices(it, Nt, Ns),:]; mu_r=mu_r)
+            @views tasks[it] = Threads.@spawn biotsavart_ckernel(nodes, wires[threadindices(it, Nt, Ns),:]; mu_r=mu_r)
         end
     end
     

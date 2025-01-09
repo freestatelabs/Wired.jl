@@ -1,5 +1,6 @@
 
 #include <stdlib.h>
+#include <stdio.h>
 
 typedef struct wire {
     float a0[3];
@@ -28,18 +29,24 @@ int main() {
     int size_float = sizeof(float);
     int size_wire = sizeof(Wire);
     float* a = aligned_alloc(size_float, 8*size_float);
-    //Wire* wires = (Wire *)aligned_alloc(size_wire, Nwires*size_wire);
-    Wire* wires = (Wire *)malloc(Nwires * sizeof(Wire));
-    float a0[3] = {1, 2, 3}; 
-    float a1[3] = {4, 5, 6}; 
-    float I = 7; 
-    float R = 8;
+    Wire* wires = (Wire *)aligned_alloc(size_wire, Nwires*size_wire);
+    //Wire* wires = (Wire *)malloc(Nwires * sizeof(Wire));
+
     for (int i=0; i<Nwires; i++) {
-        wires[i].a0[0] = a0[0];
-        wires[i].I = I;
+        wires[i].a0[0] = 1.0;
+        wires[i].a0[1] = 2.0;
+        wires[i].a0[2] = 3.0;
+        wires[i].a1[0] = 4.0;
+        wires[i].a1[1] = 5.0;
+        wires[i].a1[2] = 6.0;
+        wires[i].I = 7.0;
+        wires[i].R = 8.0;
     }
     
     testwires(wires, Nwires, a);
+    for (int i=0; i<8; i++) {
+        printf("a[%i] = %f\n", i, a[i]);
+    }
     free(a);
     free(wires);
     return 0;

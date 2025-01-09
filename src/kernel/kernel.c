@@ -10,6 +10,8 @@
 #include <math.h>
 #include <stdlib.h>
 
+#define SMALLEST_FLOAT 1e-8
+
 // Testing @ccall from Julia
 void test(float* a, float* b) {
     printf("Hello from C. Your number is %f", a[0]);
@@ -18,7 +20,7 @@ void test(float* a, float* b) {
 }
 
 static inline float mag3(float x, float y, float z){
-    return pow(pow(x,2) + pow(y,2) + pow(z,2), 0.5);
+    return pow(x*x + x*x+ x*x, 0.5);
 }
 
 static inline float dot3(float a1, float a2, float a3, float b1, float b2, float b3) {
@@ -34,8 +36,10 @@ typedef struct wire {
 
 
 void bfield_wires(float* Bx, float* By, float* Bz, float* x, float* y, float* z, 
-            Wire* wires[], int Nn, int Nw, float mu_r)
+            Wire wires[], int Nn, int Nw, float mu_r, float* test)
 {
+
+    test[0] = wires[0].I;
 
     float d; 
     float a[3];
@@ -45,6 +49,8 @@ void bfield_wires(float* Bx, float* By, float* Bz, float* x, float* y, float* z,
     float* bx = aligned_alloc(32, 32*Nn);
     float* by = aligned_alloc(32, 32*Nn);
     float* bz = aligned_alloc(32, 32*Nn);
+    float* jc = aligned_alloc(32, 32*Nn);
+    float* r = aligned_alloc(32, 32*Nn);
     float mag;
     float ac;
     float ab;
@@ -53,19 +59,20 @@ void bfield_wires(float* Bx, float* By, float* Bz, float* x, float* y, float* z,
     // Outer loop over sources 
     for (int i=0; i<Nw; i++) {
 
-        d = mu_r * (1e-7) * wires[i]->I;
-        a[0] = wires[i]->a1[0] - wires[i]->a0[0];
-        a[1] = wires[i]->a1[1] - wires[i]->a0[1];
-        a[2] = wires[i]->a1[2] - wires[i]->a0[2];
+        d = mu_r * (1e-7) * wires[i].I;
+        a[0] = wires[i].a1[0] - wires[i].a0[0];
+        a[1] = wires[i].a1[1] - wires[i].a0[1];
+        a[2] = wires[i].a1[2] - wires[i].a0[2];
 
-        // Calculate the c-vector
+        // Calculate the b and c vectors, which point from the node 
+        //  to the start and end of the Wire
         for (int j=0; j<Nn; j++) {
-            bx[j] = wires[i]->a0[0] - x[j];
-            by[j] = wires[i]->a0[1] - y[j];
-            bz[j] = wires[i]->a0[2] - z[j];
-            cx[j] = wires[i]->a1[0] - x[j];
-            cy[j] = wires[i]->a1[1] - y[j];
-            cz[j] = wires[i]->a1[2] - z[j];
+            bx[j] = wires[i].a0[0] - x[j];
+            by[j] = wires[i].a0[1] - y[j];
+            bz[j] = wires[i].a0[2] - z[j];
+            cx[j] = wires[i].a1[0] - x[j];
+            cy[j] = wires[i].a1[1] - y[j];
+            cz[j] = wires[i].a1[2] - z[j];
         }
 
         // cross rows of c with a, store in B
@@ -76,17 +83,35 @@ void bfield_wires(float* Bx, float* By, float* Bz, float* x, float* y, float* z,
             Bz[j] = cx[j]*a[1] - cy[j]*a[0];    // cx*ay - cy*ax
         }
 
+        // At the same time, calculate the distance from the center of the 
+        //  conductor to the node
+        for (int j=0; j<Nn; j++) {
+            r[j] = mag3(Bx[j], By[j], Bz[j]);     // |c x a| 
+        }
+        mag = 1/mag3(a[0], a[1], a[2]);            // 1 / |a|
+        for (int j=0; j<Nn; j++) {
+            r[j] *= mag;
+        }
+        mag = pow(wires[i].R, -2);
+        for (int j=0; j<Nn; j++) {
+            jc[j] = pow(r[j],2);;
+        }
+        for (int j=0; j<Nn; j++) {
+            jc[j] *= mag;
+        } 
+ 
         // Divide B by the magnitude squared and include constant d
         // B = d*cxa/mag(cxa)^2
         // mag = sqrt(Bx^2 + By^2 + Bz^2)
         // mag^2 = Bx^2 + By^2 + Bz^2
         for (int j=0; j<Nn; j++) {
             mag = d/(pow(Bx[j],2) + pow(By[j],2) + pow(Bz[j],2));
+            mag *= (r[j] < wires[i].R) ? ((r[j] > 0) ? jc[j] : 0.0) : 1.0;
             Bx[j] *= mag;
             By[j] *= mag;    
             Bz[j] *= mag;    
         }
-
+ 
         // Calculate the dot products and store in B 
         // B *= (a*c/mag(c) - a*b/mag(b))
         for (int j=0; j<Nn; j++) {
@@ -98,21 +123,4 @@ void bfield_wires(float* Bx, float* By, float* Bz, float* x, float* y, float* z,
     }
 
     free(bx); free(by); free(bz); free(cx); free(cy); free(cz);
-}
-
-int main() {
-    int Nn = 1000;
-    int Nw = 2; 
-
-    float* Bx = aligned_alloc(32, 32*Nn); 
-    float* By = aligned_alloc(32, 32*Nn); 
-    float* Bz = aligned_alloc(32, 32*Nn); 
-    float* x = aligned_alloc(32, 32*Nn); 
-    float* y = aligned_alloc(32, 32*Nn); 
-    float* z = aligned_alloc(32, 32*Nn); 
-    Wire** wires; 
-    float mu_r = 1.0; 
-
-    bfield_wires(Bx, By, Bz, x, y, z, wires, Nn, Nw, mu_r);
-
-}
+} 

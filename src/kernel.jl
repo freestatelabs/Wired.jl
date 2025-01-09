@@ -1,26 +1,32 @@
 """ C Kernel for Wired.jl
 """
 
-# using Libdl 
+using Libdl
 
-# kernelpath = string(@__DIR__)*"/kernel/"
-# if "ckernel" in readdir(kernelpath)
-# 	ckernel = Libdl.dlopen(kernelpath*"ckernel.so")	
-# end
+struct CWire
+    a0::NTuple{3, Cfloat}
+    a1::NTuple{3, Cfloat}
+    I::Cfloat 
+    R::Cfloat
+end
+
 kernelpath = string(@__DIR__)*"/kernel/"*"ckernel.so"
+
 """ 
 	installkernel()
 
 Install the kernel by compiling using gcc/make commands
 """
-function installkernel!(ckernel=Wired.ckernel)
+function installkernel()
 
 	current_directory = @__DIR__
 	cd(current_directory*"/kernel")
 	run(`make`);
 	cd(current_directory)
-	ckernel = Libdl.dlopen(kernelpath*"ckernel.so")
 end
+
+installkernel()
+kernel = Libdl.dlopen(kernelpath)
 
 
 """
@@ -35,25 +41,52 @@ function testkernel(a::AbstractArray{Float32})
 	println("Value of b after @ccall is:  "*string(b))
 end
 
+"""
+	convertCWires(wires::Vector{Wire{Float32}})
+
+Convert Wire objects to CWire objects.
+"""
+function convertCWires(wires::AbstractArray{Wire{Float32}})
+	N = length(wires)
+	cwires = Vector{CWire}(undef, N)
+	for i in 1:N 
+		cwires[i] = CWire(
+							(wires[i].a0[1], wires[i].a0[2], wires[i].a0[3]), 
+							(wires[i].a1[1], wires[i].a1[2], wires[i].a1[3]), 
+							wires[i].I, 
+							wires[i].R
+							)
+	end
+	
+	return cwires 		
+end
 
 """
 	biotsavart_ckernel(nodes::AbstractArray{Float32}, wires::Vector{Wire{Float32}};
 					mu_r=1.0)
 """
-function biotsavart_ckernel(nodes::AbstractArray{Float32}, wires::Vector{Wire{Float32}};
+function biotsavart_ckernel(nodes::AbstractArray{Float32}, wires::AbstractArray{Wire{Float32}};
 					mu_r=1.0)
 
 	Nn = convert(Int32, size(nodes)[1])
 	Nw = convert(Int32, length(wires))
-	B = zeros(Float32, Nn, 3)
+	Bx = zeros(Float32, Nn)
+	By = zeros(Float32, Nn)
+	Bz = zeros(Float32, Nn)
 	mu_r = convert(Float32, mu_r)
+	test = Float32.([1.0])
+	cwires = convertCWires(wires)
 
-	Bx_ptr = Base.unsafe_convert(Ptr{Float32}, @view B[:,1])
-	By_ptr = Base.unsafe_convert(Ptr{Float32}, @view B[:,2])
-	Bz_ptr = Base.unsafe_convert(Ptr{Float32}, @view B[:,3])
+	Bx_ptr = Base.unsafe_convert(Ptr{Float32}, Bx)
+	By_ptr = Base.unsafe_convert(Ptr{Float32}, By)
+	Bz_ptr = Base.unsafe_convert(Ptr{Float32}, Bz)
+
 	x_ptr = Base.unsafe_convert(Ptr{Float32}, @view nodes[:,1])
 	y_ptr = Base.unsafe_convert(Ptr{Float32}, @view nodes[:,2])
 	z_ptr = Base.unsafe_convert(Ptr{Float32}, @view nodes[:,3])
+	test_ptr = Base.unsafe_convert(Ptr{Float32}, test)
+	wire_ptr = Base.unsafe_convert(Ptr{CWire}, cwires)
+
 
 	@ccall kernelpath.bfield_wires(Bx_ptr::Ptr{Float32}, 
 								   By_ptr::Ptr{Float32}, 
@@ -61,10 +94,12 @@ function biotsavart_ckernel(nodes::AbstractArray{Float32}, wires::Vector{Wire{Fl
 								   x_ptr::Ptr{Float32},
 								   y_ptr::Ptr{Float32},
 								   z_ptr::Ptr{Float32}, 
-								   Ref(wires)::Ref{Vector{Wire{Float32}}},
+								   wire_ptr::Ptr{CWire},
 								   Nn::Int32, 
 								   Nw::Int32, 
-								   mu_r::Float32)::Cvoid
+								   mu_r::Float32, 
+								   test::Ptr{Float32})::Cvoid
 
-	return B
+	# println("test = "*string(test)*"\n")
+	return hcat(Bx, By, Bz)
 end 
