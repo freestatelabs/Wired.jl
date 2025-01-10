@@ -25,14 +25,14 @@ out singularity points.
     norm_cxa = zeros(T, Nn); dot_ac = zeros(T, Nn); 
     norm_c = zeros(T, Nn); dot_ab = zeros(T, Nn) 
     norm_b = zeros(T, Nn) 
-    d = 0.0
+    d = convert(T, 0.0)
     e = zeros(T, Nn)
 
     # Calculate the effect of each source on all nodes 
     # Linearly superimpose (sum) that effect from all sources
     for wire in wires
 
-        d = mu_r * mu0 * wire.I / (4pi)
+        d = Float32(mu_r * mu0 * wire.I / (4pi))
         a .= wire.a1 .- wire.a0
         b .= wire.a0' .- nodes 
         c .= wire.a1' .- nodes
@@ -99,7 +99,9 @@ function bfield(nodes::AbstractArray{T}, wires::Vector{Wire{S}};
     if T != S 
         nodes = convert.(S, nodes) 
     end
+
     Ns = length(wires)
+
     if Nt == 0 
         # Default is to use all available threads
         Nt = Threads.nthreads()
@@ -110,7 +112,11 @@ function bfield(nodes::AbstractArray{T}, wires::Vector{Wire{S}};
     # Spawn a new task for each thread by splitting up the source array
     tasks = Vector{Task}(undef, Nt)
     for it = 1:Nt 
-        @views tasks[it] = Threads.@spawn biotsavart(nodes, wires[threadindices(it, Nt, Ns)]; mu_r=mu_r)
+        if kernel == "julia"
+            @views tasks[it] = Threads.@spawn biotsavart(nodes, wires[threadindices(it, Nt, Ns)]; mu_r=mu_r)
+        elseif kernel == "c"
+            @views tasks[it] = Threads.@spawn biotsavart_ckernel(nodes, wires[threadindices(it, Nt, Ns),:]; mu_r=mu_r)
+        end
     end
     
     # Get the result from each calculation and add it to the output array 

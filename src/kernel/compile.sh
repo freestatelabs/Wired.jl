@@ -1,0 +1,1 @@
+gcc -O3 -ffast-math -march=native -shared -fPIC kernel.c -o kernel

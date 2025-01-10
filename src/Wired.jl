@@ -28,6 +28,14 @@ export mu0
 precision = Float64
 errmax = 1e-8
 
+# Define processing kernel
+kernel = "julia"        # other option is "c"
+
+# Define whether or not to "check inside" the radius of filaments 
+# and remove singularities
+check_inside = true
+remove_singularities = true
+
 include("sources.jl")
 export Source, Wire, Ring, CircularRing, RectangularRing
 
@@ -45,6 +53,9 @@ export makewires, makecircrings
 
 include("io.jl")
 export loadmesh, savemesh, loadrings, saverings, loadwires, savewires
+
+include("kernel.jl")
+export installkernel
 
 include("bs_ring.jl")
 include("bs_wire.jl")
