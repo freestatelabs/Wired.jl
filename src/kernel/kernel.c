@@ -13,6 +13,12 @@
 
 #define SMALLEST_FLOAT 1e-8
 
+// Testing @ccall from Julia
+void test(float* a, float* b) {
+    printf("Hello from C. Your number is %f", a[0]);
+    b[0] = a[0];
+}
+
 typedef struct {
     float a0[3];
     float a1[3];
@@ -20,18 +26,18 @@ typedef struct {
     float R;
 } Wire;
 
-// Testing @ccall from Julia
-void test(float* a, float* b) {
-    printf("Hello from C. Your number is %f", a[0]);
-    b[0] = a[0];
-}
 
-static float mag3(float x, float y, float z){
+static inline float mag3(float x, float y, float z){
     return pow(x*x + y*y + z*z, 0.5);
 }
 
-static float dot3(float a1, float a2, float a3, float b1, float b2, float b3) {
-    return a1*b1 + a2*b2 + a3*b3;
+static inline float dot3(float a1, float a2, float a3, float b1, float b2, float b3) {
+    float res1 = a1*b1;
+    float res2 = a2*b2;
+    float res3 = a3*b3;
+    float result = res1 + res2;
+    result += res3;
+    return result;
 }
 
 int bfield_wires(float* _Bx, float* _By, float* _Bz, const float* x, const float* y, const float* z, 
@@ -80,20 +86,32 @@ int bfield_wires(float* _Bx, float* _By, float* _Bz, const float* x, const float
         //  to the start and end of the Wire
         for (int j=0; j<Nn; j++) {
             bx[j] = wires[i].a0[0] - x[j];
+        }
+        for (int j=0; j<Nn; j++) {
             by[j] = wires[i].a0[1] - y[j];
+        }
+        for (int j=0; j<Nn; j++) {
             bz[j] = wires[i].a0[2] - z[j];
         }
         for (int j=0; j<Nn; j++) {
             cx[j] = wires[i].a1[0] - x[j];
-            cy[j] = wires[i].a1[1] - y[j];
-            cz[j] = wires[i].a1[2] - z[j];
         }
+        for (int j=0; j<Nn; j++) {
+            cy[j] = wires[i].a1[1] - y[j];
+        }
+        for (int j=0; j<Nn; j++) {
+            cz[j] = wires[i].a1[2] - z[j];
+        } 
 
         // cross rows of c with a, store in B
         // B = cxa
         for (int j=0; j<Nn; j++) {
             Bx[j] = cy[j]*a[2] - cz[j]*a[1];    //   cy*az  -  cz*ay
+        }
+        for (int j=0; j<Nn; j++) {
             By[j] = cz[j]*a[0] - cx[j]*a[2];    // -(cx*az) +  ax*cz
+        }
+        for (int j=0; j<Nn; j++) {
             Bz[j] = cx[j]*a[1] - cy[j]*a[0];    //   cx*ay  -  cy*ax
         }
 
@@ -124,11 +142,19 @@ int bfield_wires(float* _Bx, float* _By, float* _Bz, const float* x, const float
         for (int j=0; j<Nn; j++) {
             // TODO: check if divide by zero
             // assert((pow(Bx[j], 2) + pow(By[j], 2) + pow(Bz[j], 2)) > 1e-8);
-            g[j] = d / (pow(Bx[j], 2) + pow(By[j], 2) + pow(Bz[j], 2));
+            g[j] = d;
+            float denom = pow(Bx[j], 2);
+            denom += pow(By[j], 2); 
+            denom += pow(Bz[j], 2);
+            g[j] /= denom; 
         }
         for (int j=0; j<Nn; j++) {      
             Bx[j] *= g[j];
-            By[j] *= g[j];    
+        }
+        for (int j=0; j<Nn; j++) { 
+            By[j] *= g[j]; 
+        }
+        for (int j=0; j<Nn; j++) {    
             Bz[j] *= g[j];    
         }
 
@@ -139,10 +165,14 @@ int bfield_wires(float* _Bx, float* _By, float* _Bz, const float* x, const float
             }
             for (int j=0; j<Nn; j++) {
                 Bx[j] *= jc[j];
-                By[j] *= jc[j];    
+            }
+            for (int j=0; j<Nn; j++) {
+                By[j] *= jc[j];  
+            }
+            for (int j=0; j<Nn; j++) {  
                 Bz[j] *= jc[j];    
             }
-        }
+        } 
         
         // Calculate the dot products and store in B 
         // B *= (a*c/mag(c) - a*b/mag(b))
@@ -158,9 +188,13 @@ int bfield_wires(float* _Bx, float* _By, float* _Bz, const float* x, const float
         // copy to output array 
         for (int j=0; j<Nn; j++) {
             _Bx[j] += Bx[j];
-            _By[j] += By[j];
-            _Bz[j] += Bz[j];
         }
+        for (int j=0; j<Nn; j++) {
+            _By[j] += By[j];
+        }
+        for (int j=0; j<Nn; j++) {
+            _Bz[j] += Bz[j];
+        }  
 
     }
 
