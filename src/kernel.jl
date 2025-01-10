@@ -18,15 +18,11 @@ kernelpath = string(@__DIR__)*"/kernel/"*"ckernel.so"
 Install the kernel by compiling using gcc/make commands
 """
 function installkernel()
-
 	current_directory = @__DIR__
 	cd(current_directory*"/kernel")
 	run(`make`);
 	cd(current_directory)
 end
-
-installkernel()
-kernel = Libdl.dlopen(kernelpath)
 
 
 """
@@ -74,19 +70,21 @@ function biotsavart_ckernel(nodes::AbstractArray{Float32}, wires::AbstractArray{
 	By = zeros(Float32, Nn)
 	Bz = zeros(Float32, Nn)
 	mu_r = convert(Float32, mu_r)
-	test = Float32.([1.0])
 	cwires = convertCWires(wires)
 
 	Bx_ptr = Base.unsafe_convert(Ptr{Float32}, Bx)
 	By_ptr = Base.unsafe_convert(Ptr{Float32}, By)
 	Bz_ptr = Base.unsafe_convert(Ptr{Float32}, Bz)
-
 	x_ptr = Base.unsafe_convert(Ptr{Float32}, @view nodes[:,1])
 	y_ptr = Base.unsafe_convert(Ptr{Float32}, @view nodes[:,2])
 	z_ptr = Base.unsafe_convert(Ptr{Float32}, @view nodes[:,3])
-	test_ptr = Base.unsafe_convert(Ptr{Float32}, test)
 	wire_ptr = Base.unsafe_convert(Ptr{CWire}, cwires)
 
+	if check_inside 
+		check = 1 
+	else
+		check = 0 
+	end
 
 	@ccall kernelpath.bfield_wires(Bx_ptr::Ptr{Float32}, 
 								   By_ptr::Ptr{Float32}, 
@@ -98,8 +96,9 @@ function biotsavart_ckernel(nodes::AbstractArray{Float32}, wires::AbstractArray{
 								   Nn::Int32, 
 								   Nw::Int32, 
 								   mu_r::Float32, 
-								   test::Ptr{Float32})::Cvoid
-
-	# println("test = "*string(test)*"\n")
+								   check::Int32)::Cvoid
+	map!(x -> isnan(x) ? 0.0 : x, Bx, Bx)
+	map!(x -> isnan(x) ? 0.0 : x, By, By)
+	map!(x -> isnan(x) ? 0.0 : x, Bz, Bz)
 	return hcat(Bx, By, Bz)
 end 

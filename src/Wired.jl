@@ -31,6 +31,11 @@ errmax = 1e-8
 # Define processing kernel
 kernel = "julia"        # other option is "c"
 
+# Define whether or not to "check inside" the radius of filaments 
+# and remove singularities
+check_inside = true
+remove_singularities = true
+
 include("sources.jl")
 export Source, Wire, Ring, CircularRing, RectangularRing
 

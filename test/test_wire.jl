@@ -46,7 +46,7 @@ end
 function analytical_wire(I, R, r)
     B = zeros(length(r))
 
-    for i in 1:length(r)
+    for i in eachindex(r)
         if r[i] < R 
             B[i] = mu0*I*r[i]/(2*pi*R^2) 
         else
@@ -64,7 +64,7 @@ function testwire3()
     r = 5.0
     R = 1.0
     wire = Wire([0,0,-10000],[0,0,10000],Iwire,R)
-    nodes = Line([1e-4,0,0],[r,0,0],100).nodes
+    nodes = Line([0,0,0],[r,0,0],100).nodes
 
     By = bfield(nodes, [wire])[:,2]
     By_ = analytical_wire(Iwire, R, nodes[:,1])
