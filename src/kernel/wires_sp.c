@@ -1,4 +1,4 @@
-/*  Computational kernel for Wired.jl
+/*  Computational kernel for Wired.jl - Wire Sources
     Runs 2-3x faster than equivalent Julia code when compiled natively
 
     Notes
@@ -10,8 +10,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <time.h>
 
-#define SMALLEST_FLOAT 1e-8
 
 // Testing @ccall from Julia
 void test(float* a, float* b) {
@@ -86,20 +86,14 @@ int bfield_wires(float* _Bx, float* _By, float* _Bz, const float* x, const float
         //  to the start and end of the Wire
         for (int j=0; j<Nn; j++) {
             bx[j] = wires[i].a0[0] - x[j];
-        }
-        for (int j=0; j<Nn; j++) {
-            by[j] = wires[i].a0[1] - y[j];
-        }
-        for (int j=0; j<Nn; j++) {
-            bz[j] = wires[i].a0[2] - z[j];
-        }
-        for (int j=0; j<Nn; j++) {
             cx[j] = wires[i].a1[0] - x[j];
         }
         for (int j=0; j<Nn; j++) {
+            by[j] = wires[i].a0[1] - y[j];
             cy[j] = wires[i].a1[1] - y[j];
         }
         for (int j=0; j<Nn; j++) {
+            bz[j] = wires[i].a0[2] - z[j];
             cz[j] = wires[i].a1[2] - z[j];
         } 
 
@@ -107,31 +101,23 @@ int bfield_wires(float* _Bx, float* _By, float* _Bz, const float* x, const float
         // B = cxa
         for (int j=0; j<Nn; j++) {
             Bx[j] = cy[j]*a[2] - cz[j]*a[1];    //   cy*az  -  cz*ay
-        }
-        for (int j=0; j<Nn; j++) {
             By[j] = cz[j]*a[0] - cx[j]*a[2];    // -(cx*az) +  ax*cz
-        }
-        for (int j=0; j<Nn; j++) {
             Bz[j] = cx[j]*a[1] - cy[j]*a[0];    //   cx*ay  -  cy*ax
         }
 
         // At the same time, calculate the distance from the center of the 
         //  conductor to the node and determine correction factor, but only if
-        //  requested
+        //  requested.
+        // r = |c x a| / |a|
         if (check_inside > 0) {
+            mag = 1/mag3(a[0], a[1], a[2]);               // |a|
             for (int j=0; j<Nn; j++) {
-                r[j] = mag3(Bx[j], By[j], Bz[j]);     // |c x a| 
+                r[j] = mag*mag3(Bx[j], By[j], Bz[j]);     // |c x a| 
             }
-            mag = 1/mag3(a[0], a[1], a[2]);            // 1 / |a|
+
+            mag = 1/(wires[i].R * wires[i].R);
             for (int j=0; j<Nn; j++) {
-                r[j] *= mag;
-            }
-            mag = pow(wires[i].R, -2);
-            for (int j=0; j<Nn; j++) {
-                jc[j] = pow(r[j],2);;
-            }
-            for (int j=0; j<Nn; j++) {
-                jc[j] *= mag;
+                jc[j] = mag*(r[j]*r[j]);
             } 
         }
  
@@ -142,19 +128,12 @@ int bfield_wires(float* _Bx, float* _By, float* _Bz, const float* x, const float
         for (int j=0; j<Nn; j++) {
             // TODO: check if divide by zero
             // assert((pow(Bx[j], 2) + pow(By[j], 2) + pow(Bz[j], 2)) > 1e-8);
-            g[j] = d;
-            float denom = pow(Bx[j], 2);
-            denom += pow(By[j], 2); 
-            denom += pow(Bz[j], 2);
-            g[j] /= denom; 
+            float denom = ((Bx[j]*Bx[j]) + (By[j]*By[j]) +(Bz[j]*Bz[j]) );
+            g[j] = d/denom;
         }
-        for (int j=0; j<Nn; j++) {      
+        for (int j=0; j<Nn; j++) {     
             Bx[j] *= g[j];
-        }
-        for (int j=0; j<Nn; j++) { 
             By[j] *= g[j]; 
-        }
-        for (int j=0; j<Nn; j++) {    
             Bz[j] *= g[j];    
         }
 
@@ -165,11 +144,7 @@ int bfield_wires(float* _Bx, float* _By, float* _Bz, const float* x, const float
             }
             for (int j=0; j<Nn; j++) {
                 Bx[j] *= jc[j];
-            }
-            for (int j=0; j<Nn; j++) {
                 By[j] *= jc[j];  
-            }
-            for (int j=0; j<Nn; j++) {  
                 Bz[j] *= jc[j];    
             }
         } 
@@ -188,14 +163,9 @@ int bfield_wires(float* _Bx, float* _By, float* _Bz, const float* x, const float
         // copy to output array 
         for (int j=0; j<Nn; j++) {
             _Bx[j] += Bx[j];
-        }
-        for (int j=0; j<Nn; j++) {
             _By[j] += By[j];
-        }
-        for (int j=0; j<Nn; j++) {
             _Bz[j] += Bz[j];
         }  
-
     }
 
     free(bx); free(by); free(bz); free(cx); free(cy); free(cz); free(g);
@@ -206,32 +176,58 @@ int bfield_wires(float* _Bx, float* _By, float* _Bz, const float* x, const float
     return 0;
 } 
 
+#define NUMWIRES 1000
+#define NUMNODES 1000
+#define NUMIT 1000
 
 int main() {
-    const int Nn = 5;
-    const int Nw = 5;
+    const int Nn = NUMNODES;
+    const int Nw = NUMWIRES;
     const float mu_r = 1.0;
     const int check_inside = 1;
-    float Bx[5] = {0};
-    float By[5] = {0};
-    float Bz[5] = {0};
-    float x[5] = {1e-9}; //{1, 1, 1, 1, 1};
-    float y[5] = {0};
-    float z[5] = {0};
+    float Bx[NUMNODES] = {0};
+    float By[NUMNODES] = {0};
+    float Bz[NUMNODES] = {0};
+    float x[NUMNODES] = {0};
+    float y[NUMNODES] = {0};
+    float z[NUMNODES] = {0};
+    float I = 1000 / NUMWIRES;
+    float totaltime = 0;
 
-    Wire wires[5] = {
-        {{0, 0, -1e6}, {0, 0, 1e6}, 200, 0.1},
-        {{0, 0, -1e6}, {0, 0, 1e6}, 200, 0.1},
-        {{0, 0, -1e6}, {0, 0, 1e6}, 200, 0.1},
-        {{0, 0, -1e6}, {0, 0, 1e6}, 200, 0.1},
-        {{0, 0, -1e6}, {0, 0, 1e6}, 200, 0.1}
-    };
+    for (int i=0; i<NUMNODES; i++) {
+        x[i] = 1.0;
+    }
 
-    int val = bfield_wires(Bx, By, Bz, x, y, z, wires, Nn, Nw, mu_r, check_inside);
+    Wire wires[NUMWIRES];
+    
+    for (int i=0; i<NUMWIRES; i++) 
+    {
+        wires[i] = (Wire) {.a0 = {0, 0, -1e9}, .a1 = {0, 0, 1e9}, .I=I, .R=0.1};
+    }
+
+    clock_t start, stop; 
+    clock();
+    for (int i=0; i<NUMIT; i++) {
+
+        for (int j=0; j<NUMNODES; j++) {
+            Bx[j] = 0;
+            By[j] = 0; 
+            Bz[j] = 0;
+        }
+
+        start = clock();
+        int val = bfield_wires(Bx, By, Bz, x, y, z, wires, Nn, Nw, mu_r, check_inside);
+        stop = clock();
+
+        totaltime += (float)(stop - start)/CLOCKS_PER_SEC;
 
 
+    }
+
+    totaltime /= NUMIT;
+    
     printf("Wires:\n");
-    for (int i=0; i<Nw; i++) {
+    for (int i=0; i<10; i++) {
         for (int j=0; j<3; j++) {
             printf("%f ", wires[i].a0[j]);
         }
@@ -242,9 +238,11 @@ int main() {
         printf("\n");
     }
     printf("result is: \n");
-    for (int i=0; i<Nn; i++) {
+    for (int i=0; i<10; i++) {
         printf("%f %f %f\n", Bx[i], By[i], Bz[i]);
     }
+
+    printf("Elapsed time: %f\n", totaltime);
 
     return 0;
 }
