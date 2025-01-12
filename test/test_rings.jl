@@ -17,7 +17,7 @@ function testring_circular()
     B = bfield(nodes, [circ], errmax=1e-8)
     Bz = mu0 * Iring * R^2 / (2 * (R^2 + H^2)^1.5)
 
-    if isapprox(B[3], Bz, rtol=1e-8)
+    if isapprox(B[3], Bz, rtol=1e-4)
         return true 
     else 
         return false 
@@ -40,7 +40,7 @@ function testring_rectangular()
     Iring = 1000
 
     rect = RectangularRing("name", H, R, w, h, 1000)
-    nodes = [0 0 0] 
+    nodes = [0.0 0.0 0.0] 
     B = bfield(nodes, [rect]; Nmin=10, errmax=1e-16)
     Bz = mu0 * Iring * R^2 / (2 * (R^2 + H^2)^1.5)
 

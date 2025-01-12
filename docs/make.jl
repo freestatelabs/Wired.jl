@@ -10,6 +10,7 @@ pages = [
     "Theory" => "theory.md", 
     "Validation" => "validation.md", 
     "Benchmarking" => "benchmarking.md", 
+    "C Kernel" => "kernel.md",
     "API" => "api.md"
     ]
 

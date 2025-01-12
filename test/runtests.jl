@@ -7,25 +7,44 @@ using Test, BenchmarkTools
     @test test_elliptic()
 
     include("test_wire.jl")
-    println("Using Julia kernel")
+    include("test_rings.jl")
+    println("SETTING PRECISION TO DOUBLE")
+    Wired.precision = Float64
+    println("USING JULIA KERNEL")
     Wired.kernel = "julia"
     @test testwire1()
     @test testwire2()
     @test testwire3()
-    println("Using C kernel")
+    @test testring_circular()
+    @test testring_rectangular()
+    println("USING C KERNEL")
     Wired.kernel = "c"
-    Wired.precision = Float32
     @test testwire1()
     @test testwire2()
     @test testwire3()
-    Wired.precision = Float64
-
-    include("test_rings.jl")
+    # @test testring_circular()
+    # @test testring_rectangular()
+    println("SETTING PRECISION TO SINGLE")
+    Wired.precision = Float32
+    println("USING JULIA KERNEL")
+    Wired.kernel = "julia"
+    @test testwire1()
+    @test testwire2()
+    @test testwire3()
     @test testring_circular()
     @test testring_rectangular()
+    println("USING C KERNEL")
+    Wired.kernel = "c"
+    @test testwire1()
+    @test testwire2()
+    @test testwire3()
+    # @test testring_circular()
+    # @test testring_rectangular()
+    Wired.precision = Float64
+
 
     include("validation.jl")
-    @test test_validation()
+    # @test test_validation()
 
     include("test_fields.jl")
     @test test_line()

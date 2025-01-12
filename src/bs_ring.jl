@@ -83,37 +83,14 @@ Allocates a new array for the magnetic flux density solution.
 function biotsavart(nodes::AbstractArray{T}, rings::AbstractArray{CircularRing{T}}; 
                     mu_r=1.0, errmax=1e-16) where T<:Real
 
-    B = zeros(T, size(nodes))
-    biotsavart!(B, nodes, rings; mu_r=mu_r, errmax=errmax)
+    if Wired.kernel == "julia"
+        B = zeros(T, size(nodes))
+        biotsavart!(B, nodes, rings; mu_r=mu_r, errmax=errmax)
+    else
+        B = bs_crings(nodes, rings; mu_r=mu_r)      # Need to pass errmax
+    end
 
     return B
-end
-
-
-"""
-    biotsavart!(B::AbstractArray, nodes::AbstractArray, rect::RectangularRings; Nmin=2)
-
-Calculate the magnetic flux density for a series of circular loops with rectangular
-    cross-sections.
-
-# Arguments 
-- `B::AbstractArray`: Nx3 array of B-field components at each node 
-- `nodes::AbstractArray`: Nx3 array of locations in 3D space at which to calculate fields 
-- `rect::Vector{RectangularRing}`: B-field sources; have rectangular cross-section 
-## Optional 
-- `Nmin=2`: minimum number of loops to generate for the smallest loop side
-- `errmax=1e-6`: calculation precision for the elliptic integrals
-
-Modifies the B-field matrix in-place.
-"""
-function biotsavart!(B::AbstractArray{T}, nodes::AbstractArray{T}, rect::AbstractArray{RectangularRing{T}}; 
-                        mu_r=1.0, Nmin=2, errmax=1e-8) where T<:Real
-
-    # Convert to circular rings first 
-    circ = makecircrings(rect, Nmin) 
-
-    biotsavart!(B, nodes, circ; mu_r=mu_r, errmax=errmax)
-    return circ
 end
 
 
@@ -127,11 +104,10 @@ Allocates a new array for the B-field components.
 """
 function biotsavart(nodes::AbstractArray{T}, rect::AbstractArray{RectangularRing{T}}; 
                         mu_r=1.0, Nmin=2, errmax=1e-8) where T<:Real
-    
-    B = zeros(T, size(nodes))
-    biotsavart!(B, nodes, rect; mu_r=mu_r, Nmin=Nmin, errmax=errmax)
 
-    return B 
+    # Convert to circular rings first 
+    circ = makecircrings(rect, Nmin) 
+    return biotsavart(nodes, circ; mu_r=mu_r, errmax=errmax)
 end
 
 

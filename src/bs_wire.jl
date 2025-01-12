@@ -115,7 +115,7 @@ function bfield(nodes::AbstractArray{T}, wires::Vector{Wire{S}};
         if kernel == "julia"
             @views tasks[it] = Threads.@spawn biotsavart(nodes, wires[threadindices(it, Nt, Ns)]; mu_r=mu_r)
         elseif kernel == "c"
-            @views tasks[it] = Threads.@spawn biotsavart_ckernel(nodes, wires[threadindices(it, Nt, Ns),:]; mu_r=mu_r)
+            @views tasks[it] = Threads.@spawn bs_cwires(nodes, wires[threadindices(it, Nt, Ns),:]; mu_r=mu_r)
         end
     end
     
