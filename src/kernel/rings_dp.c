@@ -34,7 +34,7 @@ typedef struct {
 
 Calculate the complete elliptic integral of the first kind (numerically)
 */
-static inline double ellipK(double k2) {
+double ellipK(double k2) {
 
     if (fabs(k2 - 1.0) <= ERRMAX) {
         return -1;
@@ -66,7 +66,7 @@ static inline double ellipK(double k2) {
 
 Calculate the complete elliptic integral of the second kind (numerically)
 */
-static inline double ellipE(double k2) {
+double ellipE(double k2) {
 
     double E = 0; 
     if (fabs(k2 - 1.0) <= ERRMAX) {
@@ -77,11 +77,11 @@ static inline double ellipE(double k2) {
     }
     else {
         double err = 2*ERRMAX;
-        int n = 0; 
+        double n = 0; 
         double an = 1; 
         double gn = sqrt(1 - k2);
         double cn = fabs(an*an - gn*gn);
-        double esumn = cn * pow(2.0, (double)(n-1));
+        double esumn = cn * exp2(n-1);
         double an1, gn1, cn1, esumn1;
 
         while ((n < ITMAX) && (err > ERRMAX)) {
@@ -90,7 +90,7 @@ static inline double ellipE(double k2) {
             an1 = (an + gn) / 2.0;
             gn1 = sqrt(an * gn);
             cn1 = fabs(an1*an1 - gn1*gn1);
-            esumn1 = esumn + cn1*(pow(2, (double)(n-1)));
+            esumn1 = esumn + cn1*exp2(n-1);
 
             err = fabs(esumn1 - esumn);
 
@@ -212,7 +212,7 @@ int main() {
     const double mu_r = 1.0;
     const int check_inside = 1;
     const double H = 0; 
-    const double R = 2; 
+    const double R = 1; 
     const double r = 0.1;
 
     double Bx[NUMNODES] = {0};
@@ -221,13 +221,13 @@ int main() {
     double x[NUMNODES] = {0};
     double y[NUMNODES] = {0};
     double z[NUMNODES] = {0};
-    double I = 10000 / NUMRINGS;
+    double I = 1000 / NUMRINGS;
     double totaltime = 0;
 
     for (int i=0; i<NUMNODES; i++) {
-        x[i] = 0.1;
-        y[i] = 0.2;
-        z[i] = 0.3;
+        x[i] = 0;
+        y[i] = 0;
+        z[i] = 0;
     }
 
     Ring rings[NUMRINGS];
@@ -251,7 +251,7 @@ int main() {
         int val = bfield_rings(Bx, By, Bz, x, y, z, rings, Nn, Nr, mu_r, check_inside);
         stop = clock();
 
-        totaltime += (double)(stop - start)/CLOCKS_PER_SEC;
+        totaltime += (stop - start)/CLOCKS_PER_SEC;
     }
 
     totaltime /= NUMIT;

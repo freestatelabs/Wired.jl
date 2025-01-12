@@ -184,15 +184,15 @@ int bfield_wires(double* Bx, double* By, double* Bz,
 
 // Define a test case for checking the code and for profiling speed
 // Expected result: By = 0.0002 T
-#define NUMWIRES 1000
-#define NUMNODES 1000
-#define NUMIT 1000
+#define NUMWIRES 10000
+#define NUMNODES 10000
+#define NUMIT 100
 
 int main() {
     const int Nn = NUMNODES;
     const int Nw = NUMWIRES;
     const double mu_r = 1.0;
-    const int check_inside = 1;
+    const int check_inside = 0;
     double Bx[NUMNODES] = {0};
     double By[NUMNODES] = {0};
     double Bz[NUMNODES] = {0};
@@ -201,15 +201,16 @@ int main() {
     double z[NUMNODES] = {0};
     double I = 1000 / NUMWIRES;
     double totaltime = 0;
+    double R = 1;
 
     for (int i=0; i<NUMNODES; i++) {
-        x[i] = 1.0;
+        x[i] = 2*R;
     }
 
     Wire wires[NUMWIRES];
     for (int i=0; i<NUMWIRES; i++) 
     {
-        wires[i] = (Wire) {.a0 = {0, 0, -1e9}, .a1 = {0, 0, 1e9}, .I=I, .R=0.1};
+        wires[i] = (Wire) {.a0 = {0, 0, -1e9}, .a1 = {0, 0, 1e9}, .I=I, .R=R};
     }
 
     clock_t start, stop; 

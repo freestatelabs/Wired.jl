@@ -3,7 +3,7 @@
 # Reference: https://makefiletutorial.com/
 
 all: wires_sp.so wires_dp.so rings_sp.so rings_dp.so
-CC = gcc-14
+CC = gcc
 CFLAGS = -O3 -ffast-math -march=native
 
 wires_sp.so: wires_sp.c

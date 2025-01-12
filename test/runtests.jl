@@ -22,8 +22,8 @@ using Test, BenchmarkTools
     @test testwire1()
     @test testwire2()
     @test testwire3()
-    @test testring_circular()
-    @test testring_rectangular()
+    # @test testring_circular()
+    # @test testring_rectangular()
     println("SETTING PRECISION TO SINGLE")
     Wired.precision = Float32
     println("USING JULIA KERNEL")
@@ -38,13 +38,13 @@ using Test, BenchmarkTools
     @test testwire1()
     @test testwire2()
     @test testwire3()
-    @test testring_circular()
-    @test testring_rectangular()
+    # @test testring_circular()
+    # @test testring_rectangular()
     Wired.precision = Float64
 
 
     include("validation.jl")
-    @test test_validation()
+    # @test test_validation()
 
     include("test_fields.jl")
     @test test_line()

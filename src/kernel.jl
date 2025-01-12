@@ -47,6 +47,24 @@ function installkernel()
 end
 
 
+function checkifkernelinstalled()
+	# See if its there
+
+	if isfile(wires_sp) && isfile(wires_dp) && isfile(rings_sp) && isfile(rings_dp)
+		return true 
+	else
+		return false 
+	end 
+end
+
+function kernelguard()
+	# Install kernel if its not there 
+	if !checkifkernelinstalled()
+		installkernel()
+	end 
+end
+
+
 """
 	convertCWires(wires::Vector{Wire{Float32}})
 
@@ -124,6 +142,8 @@ end
 function bs_cwires(nodes::AbstractArray{Float32}, wires::AbstractArray{Wire{Float32}};
 					mu_r=1.0)
 
+	kernelguard()
+
 	Nn = convert(Int32, size(nodes)[1])
 	Nw = convert(Int32, length(wires))
 	Bx = zeros(Float32, Nn)
@@ -172,6 +192,8 @@ end
 """
 function bs_cwires(nodes::AbstractArray{Float64}, wires::AbstractArray{Wire{Float64}};
 					mu_r=1.0)
+
+	kernelguard()
 
 	Nn = convert(Int64, size(nodes)[1])
 	Nw = convert(Int64, length(wires))
@@ -223,6 +245,8 @@ end
 function bs_crings(nodes::AbstractArray{Float32}, rings::AbstractArray{CircularRing{Float32}};
 					mu_r=1.0)
 
+	kernelguard()
+
 	Nn = convert(Int32, size(nodes)[1])
 	Nr = convert(Int32, length(rings))
 	Bx = zeros(Float32, Nn)
@@ -273,8 +297,10 @@ end
 function bs_crings(nodes::AbstractArray{Float64}, rings::AbstractArray{CircularRing{Float64}};
 					mu_r=1.0)
 
-	Nn = convert(Int64, size(nodes)[1])
-	Nr = convert(Int64, length(rings))
+	kernelguard()
+
+	Nn = convert(Int32, size(nodes)[1])
+	Nr = convert(Int32, length(rings))
 	Bx = zeros(Float64, Nn)
 	By = zeros(Float64, Nn)
 	Bz = zeros(Float64, Nn)
@@ -291,7 +317,7 @@ function bs_crings(nodes::AbstractArray{Float64}, rings::AbstractArray{CircularR
 
 	# Convert bool to C int
 	if check_inside 
-		check = 1.0f0 
+		check = 1.0f0
 	else
 		check = 0.0f0
 	end
@@ -303,10 +329,10 @@ function bs_crings(nodes::AbstractArray{Float64}, rings::AbstractArray{CircularR
 								   y_ptr::Ptr{Float64},
 								   z_ptr::Ptr{Float64}, 
 								   ring_ptr::Ptr{CRing64},
-								   Nn::Int64, 
-								   Nr::Int64, 
+								   Nn::Int32, 
+								   Nr::Int32, 
 								   mu_r::Float64, 
-								   check::Int64)::Cvoid
+								   check::Int32)::Cvoid
 	
 	# Zero out singularity points
 	map!(x -> isnan(x) ? 0.0 : x, Bx, Bx)
